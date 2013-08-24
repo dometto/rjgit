@@ -84,25 +84,25 @@ module RJGit
         treewalk = TreeWalk.new(@repo)
         treewalk.add_tree(start_tree)
         while treewalk.next
-          name = treewalk.get_name_string
-          if treemap.keys.include?(name) then
-            existing_trees[name] = treewalk.get_object_id(0) if treewalk.isSubtree
-            treemap[name] = :deleted if treemap[name] == :delete
+          filename = treewalk.get_name_string
+          if treemap.keys.include?(filename) then
+            existing_trees[filename] = treewalk.get_object_id(0) if treewalk.isSubtree
+            treemap[filename] = :deleted if treemap[filename] == :delete
           else
             mode = treewalk.isSubtree ? FileMode::TREE : FileMode::REGULAR_FILE
-            formatter.append(name.to_java_string, mode, treewalk.get_object_id(0))
+            formatter.append(filename.to_java_string, mode, treewalk.get_object_id(0))
           end
         end
       end
     
-      treemap.each do |name, data|
+      treemap.each do |object_name, data|
         case data
           when String
             blobid = @object_inserter.insert(Constants::OBJ_BLOB, data.to_java_bytes)
-            formatter.append(name.to_java_string, FileMode::REGULAR_FILE, blobid)
+            formatter.append(object_name.to_java_string, FileMode::REGULAR_FILE, blobid)
           when Hash
-            next_tree = build_tree(existing_trees[name], data)
-            formatter.append(name.to_java_string, FileMode::TREE, next_tree)
+            next_tree = build_tree(existing_trees[object_name], data)
+            formatter.append(object_name.to_java_string, FileMode::TREE, next_tree)
           end
       end
     
